@@ -65,46 +65,63 @@ if page == "📅 시간표":
     base_table = {
         "월": ["A", "C", "대수", "B", "D", "문학", "영어"],
         "화": ["문학", "A", "D", "대수", "B", "영어", "생명"],
-        "수": ["영어", "D", "대수", "체육", "문학", "C"],
+        "수": ["영어", "D", "대수", "체육", "문학", "C", ""],
         "목": ["체육", "B", "진로", "C", "문학", "A", "D"],
-        "금": ["대수", "A", "B", "영어", "창체", "창체"]
+        "금": ["대수", "A", "B", "영어", "창체", "창체", ""]
     }
 
     replace_map = {"A":A,"B":B,"C":C,"D":D}
 
-    # 과목 치환
+    # 선택과목 치환
     for day in base_table:
         for i in range(len(base_table[day])):
             subject = base_table[day][i]
             if subject in replace_map and replace_map[subject] != "선택안함":
                 chosen = replace_map[subject]
                 assigned = class_assignment[subject].get(chosen,"")
-                subject = f"{chosen}\n({assigned})"
+                subject = f"{chosen}<br>({assigned})"
             base_table[day][i] = subject
 
     st.subheader("📖 시간표")
 
-    days = ["", "월", "화", "수", "목", "금"]
+    # ---------------------------
+    # HTML 테이블 생성 (완전 안정)
+    # ---------------------------
 
-    # 🔥 완전 고정 폭 (비율 고정)
-    col_widths = [1, 2, 2, 2, 2, 2]
+    html = """
+    <div style="overflow-x:auto;">
+    <table style="
+        border-collapse:collapse;
+        width:900px;
+        min-width:900px;
+        text-align:center;
+    ">
+    """
 
     # 헤더
-    cols = st.columns(col_widths)
-    for col, day in zip(cols, days):
-        col.markdown(f"**{day}**")
+    html += "<tr>"
+    html += "<th style='border:1px solid #999; padding:8px; width:100px;'></th>"
+    for day in ["월", "화", "수", "목", "금"]:
+        html += f"<th style='border:1px solid #999; padding:8px; width:160px;'>{day}</th>"
+    html += "</tr>"
 
     # 본문
-    for period in range(7):
-        cols = st.columns(col_widths)
-        cols[0].markdown(f"**{period+1}교시**")
+    for i in range(7):
+        html += "<tr>"
+        html += f"<td style='border:1px solid #999; padding:8px; font-weight:bold;'>{i+1}교시</td>"
 
-        for i, day in enumerate(["월","화","수","목","금"]):
+        for day in ["월", "화", "수", "목", "금"]:
             try:
-                value = base_table[day][period]
+                value = base_table[day][i]
             except:
                 value = ""
-            cols[i+1].write(value)
+            html += f"<td style='border:1px solid #999; padding:8px; word-break:keep-all;'>{value}</td>"
+
+        html += "</tr>"
+
+    html += "</table></div>"
+
+    st.markdown(html, unsafe_allow_html=True)
 
 # ===================================================
 # 학사일정
